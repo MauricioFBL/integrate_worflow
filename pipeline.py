@@ -1,11 +1,11 @@
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 import remoteok.extract.new_offers as ro_ex
 import remoteok.transform.clean as ro_tr
 import remoteok.load.insert as ro_lo
 
 
-class NewPipeline(ABC):
+class NewPipeline():
 
     def __init__(self) -> None:
         self.execute()
@@ -31,22 +31,21 @@ class NewPipeline(ABC):
 class RemoteOnlyPipelineExecution(NewPipeline):
 
     def execute(self):
-        print()
-        # self.extract()
-        # self.transform()
-        # self.load()
+        self.extract()
+        self.transform()
+        self.load()
 
-    # def extract(self):
-    #     pass
+    def extract(self):
+        pass
 
-    # def transform(self):
-    #     pass
+    def transform(self):
+        pass
 
-    # def load(self):
-    #     pass
+    def load(self):
+        pass
 
 
-class RemoteOkPipelineExecution:
+class RemoteOkPipelineExecution():
 
     def execute(self):
         self.extract()
@@ -63,7 +62,7 @@ class RemoteOkPipelineExecution:
         ro_lo.main()
 
 
-pipelines = [RemoteOkPipelineExecution(), RemoteOnlyPipelineExecution()]
+pipelines = [RemoteOkPipelineExecution()]
 
 
 def main():
