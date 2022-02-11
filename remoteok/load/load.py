@@ -16,6 +16,7 @@ def read_file(route):
         return pd.read_csv(route)
     except:
         print('Error en la lectura de la datra')
+        return None
 
 
 def find_duplicates(column, key, key_value):
@@ -50,8 +51,8 @@ def insert_company(df):
         news['description'] = '--'
         news = pd.DataFrame(news)
         news.to_sql('company', con=conn,
-                  if_exists='append',
-                  index=False)
+                    if_exists='append',
+                    index=False)
         print('se insertaron:', news)
 
     sql_df = pd.read_sql(
@@ -60,6 +61,7 @@ def insert_company(df):
         con=conn)
 
     conn.close()
+
     return(sql_df[['id_company', 'name']])
 
 
@@ -81,7 +83,7 @@ def insert_category(df):
                         if_exists='append',
                         index=False)
         print('Se registro lo sigiente', new_cats)
-    
+
     sql_df = pd.read_sql(
         """SELECT * FROM position_category;
                     """,
@@ -108,10 +110,10 @@ def insert_location(df):
         news['continent'] = 'unknown'
         news = pd.DataFrame(news)
         news.to_sql('location', con=conn,
-                  if_exists='append',
-                  index=False)
-        print('se insertaron: ' + (str) (len(news)),
-        news)
+                    if_exists='append',
+                    index=False)
+        print('se insertaron: ' + (str)(len(news)),
+              news)
 
     sql_df = pd.read_sql(
         "SELECT * FROM location;",
@@ -127,7 +129,6 @@ def get_data():
         """SELECT * FROM position;
                     """,
         con=conn)
-    # print(sql_df)
     conn.close()
     return sql_df
 
@@ -152,9 +153,9 @@ def insert_data(df, categories, companies):
     df[['activate', 'english', 'remote']] = 'True'
     df['english_level'] = 'conversational'
     df[['num_offers']] = 0
-    # time.sleep(5)
+    time.sleep(6)
     locations = insert_location(df['Location'].drop_duplicates())
-    
+
     loc_id = list(locations['id_location'])
     loc_nm = list(locations['country'])
 
@@ -177,29 +178,56 @@ def insert_data(df, categories, companies):
              'english', 'english_level', 'position_url',
              'company_id']
     df.columns = names
-
-    registered = get_data().drop(['id_position','uid'], axis=1)
+    registered = get_data().drop(['id_position', 'uid'], axis=1)
     print(registered.columns)
     print(df.columns)
-
-    result = pd.concat([registered.drop_duplicates(),df])
+    result = pd.concat([registered.drop_duplicates(), df])
     news = result[result.duplicated()]
-    # keys = list(registered.columns.values)
-    # i1 = df.set_index(keys).index
-    # i2 = registered.set_index(keys).index
-    # news = (df[~i1.isin(i2)])
 
-    # news = []
     if news.empty:
         print('no hay nada por cargara Position')
     else:
-        # conn = pc.connection_elephant()
-        # df.to_sql('position', con=conn,
-        #             if_exists='append',
-        #             index=False)
-        # conn.close()
+        conn = pc.connection_elephant()
+        df.to_sql('position', con=conn,
+                  if_exists='append',
+                  index=False)
+        conn.close()
         print(f'Se cargaron : {len(news)} registrps')
-    
+
+
+def insert_skills(df):
+    df = list(df)
+    df = [x.replace('[', '').replace(']', '').replace(
+        "'", '').strip().split(', ') for x in df]
+    df = [item for sublist in df for item in sublist]
+    df = pd.DataFrame({'skill': df}).drop_duplicates()
+    currents = list(df['skill'])
+
+    conn = pc.connection_elephant()
+    sql_df = pd.read_sql(
+        "SELECT * FROM skill;",
+        con=conn)
+    registered = list(sql_df['skill'])
+    news = pd.DataFrame({'skill': list(set(currents) - set(registered))})
+
+    if news.empty:
+        print('No existen registros nuevos')
+    else:
+        news.to_sql('skill', con=conn,
+                    if_exists='append',
+                    index=False)
+        print('se insertaron: ' + (str)(len(news)),
+              news)
+
+    sql_df = pd.read_sql(
+        "SELECT * FROM skill;",
+        con=conn)
+
+    return sql_df
+
+
+def insert_position_skills():
+    pass
 
 
 def main():
@@ -209,6 +237,7 @@ def main():
     categories = insert_category(data["categories"].drop_duplicates())
     companies = insert_company(data['Company'].drop_duplicates())
     insert_data(data, categories, companies)
+    skills = insert_skills(data['SKILLS'])
 
 
 if __name__ == '__main__':
