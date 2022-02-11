@@ -45,7 +45,7 @@ class RemoteOnlyPipelineExecution(NewPipeline):
         pass
 
 
-class RemoteOkPipelineExecution():
+class RemoteOkPipelineExecution(NewPipeline):
 
     def execute(self):
         self.extract()
@@ -58,8 +58,8 @@ class RemoteOkPipelineExecution():
     def transform(self):
         ro_tr.Clean()
 
-    def load(self):
-        ro_lo.main()
+    # def load(self):
+    #     ro_lo.main()
 
 
 pipelines = [RemoteOkPipelineExecution()]
