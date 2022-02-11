@@ -46,7 +46,7 @@ class NewOffer:
             skills.append(skill_v)
             # print('___'*15)
         skills.pop(0)
-        print((skills))
+        # print((skills))
         return skills
 
     def _get_data(self, soup, queries):

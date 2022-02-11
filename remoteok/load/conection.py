@@ -32,7 +32,7 @@ def connection_elephant():
         db = create_engine(conn_string)
         conn = db.connect()
         # conn = psycopg2.connect(conn_string
-        #                         )
+                                # )
         conn.autocommit = True
         return conn
     except:

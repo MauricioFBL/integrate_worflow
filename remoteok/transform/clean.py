@@ -56,7 +56,7 @@ class Clean():
 
             df['Descripción'] = a
             today = dt.date.today()
-            print(df.columns)
+            # print(df.columns)
 
             df.columns = ['Position', 'Company', 'Location', 'Date_published',
                           'URL', 'Description', 'SKILLS','Home_URL',
