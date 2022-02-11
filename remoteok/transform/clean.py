@@ -77,11 +77,11 @@ class Clean():
             unk = ['DEVELOPER','SOFTWARE','WEB','APPLICATION', 'SOLUTIONS']
 
             conditions = [
-                df['Position'].isin(front),
-                df['Position'].isin(back),
-                df['Position'].isin(mng),
-                df['Position'].isin(full),
-                df['Position'].isin(aly),
+                df['Position'].str.contains('|'.join(front)),
+                df['Position'].str.contains('|'.join(back)),
+                df['Position'].str.contains('|'.join(mng)),
+                df['Position'].str.contains('|'.join(full)),
+                df['Position'].str.contains('|'.join(aly)),
                 df['Position'].str.contains('DEVOPS'),
                 df['Position'].str.contains('EDITOR'),
                 df['Position'].str.contains('ECONOMIST'),
@@ -94,7 +94,7 @@ class Clean():
                 df['Position'].str.contains('ECONOMIST'),
                 df['Position'].str.contains('RECRUITER'),
                 df['Position'].str.contains('HR'),
-                df['Position'].isin(unk),
+                df['Position'].str.contains('|'.join(unk)),
             ]
 
             choices = [
