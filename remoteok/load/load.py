@@ -140,14 +140,6 @@ class Load():
             df['Location'] = df['Location'].replace(
                 loc_nm[x], loc_id[x])
 
-        df['CURRENCY'] = df['CURRENCY'].replace('USD', 2)
-        df['seniority'] = 4
-        df['modality'] = 'unknown'
-        df[['activate', 'english', 'remote']] = 'True'
-        df['english_level'] = 'conversational'
-        df[['num_offers']] = 0
-
-        # time.sleep(6)
         df = df[['Position', 'categories', 'seniority',
                 'Description', 'modality', 'Date_published',
                  'activate', 'num_offers', 'MIN_SALARY',
@@ -164,17 +156,14 @@ class Load():
                  'company_id', 'skill']
 
         df.columns = names
-        df2 = df.copy()
+        df['date_position'] = df['date_position'].str[:-6:]
+        df2 = df
         df = df.drop(['skill'], axis=1)
         registered = self.get_data('position', con).drop(
             ['id_position', 'uid'], axis=1)
         registered = registered.drop_duplicates()
-        result = pd.concat([registered, df])
-        news = result[result.duplicated()]
-        # print(news.shape)
-        # print(result.shape)
-        # print(registered.shape)
-        # print(df.shape)
+
+        news = df[~df.isin(registered)].dropna()
 
         if news.empty:
             print('No existen registros nuevos para position')
@@ -219,14 +208,14 @@ class Load():
 
     def insert_position_skills(self, df, skill_, keys, con):
         df = df.drop_duplicates()
-        # print(len(df))
         keys['date_position'] = keys['date_position'].astype('str')
         keys['activate'] = keys['activate'].astype('str')
         keys['english'] = keys['english'].astype('str')
         keys['remote'] = keys['remote'].astype('str')
         keys['salary'] = keys['salary'].astype('float64')
         keys = keys.drop_duplicates()
-        df['date_position'] = df['date_position'].str[:-6:]
+        # df['date_position'] = df['date_position'].str[:-6:]
+        
         df2 = df.merge(keys, how='left', on=[
             'position_title', 'position_category_id',
             'seniority_id', 'description', 'modality',
@@ -235,8 +224,11 @@ class Load():
             'currency_id', 'remote', 'location_id',
             'english', 'english_level', 'position_url',
             'company_id'])
-
+        
+        print(df2[df2['position_title'] == 'PRODUCT GROWTH MANAGER ACTIVATION'])
+        print(keys[keys['position_title'] == 'PRODUCT GROWTH MANAGER ACTIVATION'])
         df2 = df2[['id_position', 'skill']]
+        
         df2['skill'] = [x.replace('[', '').replace(']', '').replace(
             "'", '').strip().split(', ') for x in df2['skill']]
 
@@ -251,13 +243,13 @@ class Load():
                 # print(f'posicion: { pos} skill {skill}')
 
         df2 = pd.DataFrame({'position_id': positions, 'skill_id': skills})
-        df2 = df2.drop_duplicates()
+        df2 = df2.drop_duplicates().dropna()
 
         registered = self.get_data('position_skill', con).drop(
             ['id_position_skill'], axis=1)
-        result = pd.concat([registered.drop_duplicates(), df2])
 
-        news = result[result.duplicated()]
+        # print(df2)
+        news = df2[~df2.isin(registered)].dropna()
 
         skl_id = list(skill_['id_skill'])
         skl_nm = list(skill_['skill'])
@@ -265,15 +257,16 @@ class Load():
         for x in range(len(skl_id)):
             news['skill_id'] = news['skill_id'].replace(
                 skl_nm[x], skl_id[x])
+                
         news = news.fillna(1)
 
         if news.empty:
             print('No existen registros nuevos para position_skill')
         else:
-            conn = con
-            news.to_sql('position_skill', con=conn,
-                        if_exists='append',
-                        index=False)
+            # conn = con
+            # news.to_sql('position_skill', con=conn,
+            #             if_exists='append',
+            #             index=False)
             print(f'Se cargaron : {len(news)} registros')
 
 
