@@ -1,3 +1,4 @@
+from copy import copy
 from xml.dom.domreg import registered
 import pandas as pd
 import datetime as dt
@@ -156,14 +157,21 @@ class Load():
                  'company_id', 'skill']
 
         df.columns = names
+
         df['date_position'] = df['date_position'].str[:-6:]
-        df2 = df
+
+        df2 = copy(df)
+
         df = df.drop(['skill'], axis=1)
+
         registered = self.get_data('position', con).drop(
             ['id_position', 'uid'], axis=1)
-        registered = registered.drop_duplicates()
+
+        # registered = registered.drop_duplicates()
 
         news = df[~df.isin(registered)].dropna()
+        registered.to_csv('ids.csv')
+        news.to_csv('sinids.csv')
 
         if news.empty:
             print('No existen registros nuevos para position')
@@ -177,7 +185,7 @@ class Load():
         registered = self.get_data(
             'position', con).drop(
             ['uid'], axis=1
-        ).drop_duplicates()
+        )
 
         return df2, registered
 
@@ -207,13 +215,13 @@ class Load():
         return sql_df
 
     def insert_position_skills(self, df, skill_, keys, con):
-        df = df.drop_duplicates()
+        # df = df.drop_duplicates()
         keys['date_position'] = keys['date_position'].astype('str')
         keys['activate'] = keys['activate'].astype('str')
         keys['english'] = keys['english'].astype('str')
         keys['remote'] = keys['remote'].astype('str')
         keys['salary'] = keys['salary'].astype('float64')
-        keys = keys.drop_duplicates()
+        # keys = keys.drop_duplicates()
         # df['date_position'] = df['date_position'].str[:-6:]
         
         df2 = df.merge(keys, how='left', on=[
@@ -224,9 +232,9 @@ class Load():
             'currency_id', 'remote', 'location_id',
             'english', 'english_level', 'position_url',
             'company_id'])
-        
-        print(df2[df2['position_title'] == 'PRODUCT GROWTH MANAGER ACTIVATION'])
-        print(keys[keys['position_title'] == 'PRODUCT GROWTH MANAGER ACTIVATION'])
+        print(df2)
+        # print(df2[df2['position_title'] == 'PRODUCT GROWTH MANAGER ACTIVATION'])
+        # print(keys[keys['position_title'] == 'PRODUCT GROWTH MANAGER ACTIVATION'])
         df2 = df2[['id_position', 'skill']]
         
         df2['skill'] = [x.replace('[', '').replace(']', '').replace(
